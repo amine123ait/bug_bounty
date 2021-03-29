@@ -10,3 +10,9 @@ bug_bounty POC
 
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=amine123ait&layout=compact)](https://github.com/anuraghazra/github-readme-stats)
 
+
+
+### wake time 
+
+
+[![willianrod's wakatime stats](https://github-readme-stats.vercel.app/api/wakatime?username=amine123ait)](https://github.com/anuraghazra/github-readme-stats)

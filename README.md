@@ -11,3 +11,5 @@ bug_bounty POC
 
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=amine123ait&layout=compact)](https://github.com/amine123ait/bug_bounty)
 
+## spotify test
+[![Spotify](https://amine123ait.vercel.app/api/spotify)](https://open.spotify.com/user/mrecho)

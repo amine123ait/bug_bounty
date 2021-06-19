@@ -1,25 +1,3 @@
-# enum and save it as text .txt 
-## methodology 
--domain discovering 
--endpoint
--Visual Identification
--Platform Identification
--Content Discovery
--Parameter Discovery
-
-## online recon 
-cat wayback | grep -v google | grep -v facebook | ../httpx/cmd/httpx/httpx -silent -json | tee resul.json | jq
-
-
-## main.sh 
-
-```
-apt update
-apt install figlet
-```
-
-## enum-sub-domain
-```
 #!/bin/bash
 
 #Interlace
@@ -38,6 +16,7 @@ clean(){
 	rm -r ./.tools
 	mkdir ./.tools &>/dev/null
 	mkdir -p ./.tools/logs/
+	#touch ./.tools/logs/my.log
 	wget https://raw.githubusercontent.com/fredpalmer/log4bash/master/log4bash.sh -P ./.tools/logs/ &>/dev/null
 	git clone https://github.com/swelljoe/slog.git ./.tools/logs/slog &>/dev/null
 	. ./.tools/logs/slog/slog.sh
@@ -56,7 +35,7 @@ setup(){
 
 	#echo -e "\e[5mInstalling tools.."
 	export sub_assest_online='$domain.assetfinder.online'
-	export wayback='$domain.assetfinder.online.wayback'
+	export wayback='$domain.assetfi_nder.online.wayback'
 	export HEADER="User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_0) AppleWebkit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.162 Safari/537.36"
 	
 	git clone https://github.com/nitefood/asn ./.tools/asn-tool  &>/dev/null
@@ -69,13 +48,15 @@ setup(){
 	log_success "WEBscreenn -DONE";
 	#apt install amass &>/dev/null
 	log_success "Amass -DONE";
-	git clone https://github.com/blechschmidt/massdns.git ./.tools/dns/
+	git clone https://github.com/blechschmidt/massdns.git ./.tools/dns/ &>/dev/null
 	#make ./.tools/dns/ &>/dev/null
 	cd ./.tools/dns/ ;make &>/dev/null
+	cd ../.. &>/dev/null
 	#cc  -O3 -std=c11 -DHAVE_EPOLL -DHAVE_SYSINFO -Wall -fstack-protector-strong src/main.c -o bin/massdns 
 	log_success "Massdns -DONE";
 }
 domain-enum(){
+
 	log_warning "Enumerating Subdomains..";
 	log_info "will take some time so set back and relax $now ";
 	mkdir $domain
@@ -96,6 +77,10 @@ domain-enum(){
 	log_warning "Running Amass..";
 	amass enum -brute -active -d $domain -o ./$domain/$domain-amass-output.txt &>/dev/null
 	cat ./$domain/$domain-amass-output.txt | httprobe -p http:81 -p http:3000 -p https:3000 -p http:3001 -p https:3001 -p http:8000 -p http:8080 -p https:8443 -c 50 | tee ./$domain/online-amass-domains.txt &>/dev/null
+	log_warning "extract end points !";
+	# end points scripts
+	interlace -tL ./$domain-amass-output.txt -threads 5 -c "gron 'https://otx.alienvault.com/otxapi/indicator/hostname/url_list/_target_/?limit=100&page=1' | grep '\\burl\\b' | gron --ungron | jq | egrep -wi 'url' | awk '{print $2}' | sort -u" --silent | tee ./$domain/end-points &>/dev/null
+	cat end-points | grep -v google | grep -v facebook |grep "\burl\b" |   awk '{print $2}' |sed 's/"//g'| sort -u | tee ./$domain/end-points-2 &>/dev/null
 	log_success "DONE -domain-enum";
 	
 }
@@ -137,7 +122,12 @@ function nuclei(){
 
 win(){
 	#my tricks here
+	echo "xss"
 	cat ./$domain/wayback.online | dalfox pipe
+	echo "takeovers"
+	./subfinder/v2/cmd/subfinder/subfinder -d $domain >> domains ; ./assetfinder/assetfinder -subs-only $domain >> domains ; amass enum -norecursive -noalts -d $domain >> domains ; subjack -w domains -t 100 -timeout 30 -ssl -c ~/go/src/github.com/haccer/subjack/fingerprints.json -v 3 >> takeover ;
+
+
 
 }
 
@@ -161,6 +151,7 @@ if [[ ! -z $1 ]]; then
     clean
     setup
     domain-enum
+    win
     #amass $domain
     #win
     #resulte
@@ -185,66 +176,3 @@ else
     mail -s "Internet connection lost on $(hostname) at $(date)" 
 fi
 
-
-```
-## problems 
-
-handle errors 
-add setup.sh to download heavy tools in /opt/
-
-
-# convert .txt to pdf 
-
-
-
-
-
-# merj the pages and make an intro 
-
-convert markdown to pdf 
-add pages to others 
-edit txt and covert it pdf 
-
-
-
-# store the data in /dev/shm and send it 
-
-## email 
-http://0x0.st upload the result organized here and send the url 
-
-
-## webhook discord 
-```
-from discord_webhook import DiscordWebhook
-
-webhook = DiscordWebhook(url='https://discord.com/api/webhooks/855593834317348874/ESdkQ2MgGPP2LusrMs9Fd2mQDCxPJGDzGBZFjH_tyq9aCP1Ei6MuAPImGsXza__9GEsI', username="FILE transfer")
-
-# send two images
-path="/home/projects/enum-bot-1/txt2pdf.py"
-with open(path, "rb") as f:
-    webhook.add_file(file=f.read(), filename='example.jpg')
-with open("/home/projects/enum-bot-1/test", "rb") as f:
-    webhook.add_file(file=f.read(), filename='example2.jpg')
-
-response = webhook.execute()
-
-```
-send it as .jpg 
-
-
-## upload it to my github 
-
-
-
-
-
-
-# resources : 
-
-https://medium.com/@nicklaus_park/levelup-0x02-bug-bounter-hunter-methodology-v3-8f5b802af2ad
-https://github.com/shellbr3ak/ReconToolkit/blob/main/recon.sh
-https://gist.github.com/jhaddix/857a2608a13cf706522731dcaa4edb8d
-https://www.youtube.com/watch?v=5N7k0g7arYE
-https://www.theunixschool.com/2014/08/sed-examples-remove-delete-chars-from-line-file.html
-https://github.com/swelljoe/slog
-https://github.com/rubenkharel/eReKon
